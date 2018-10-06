@@ -1,15 +1,19 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server')
 const {todo} = require('./../models/todo')
 
 const todos = [{
-    text: "first test"
+    text: "first test",
+    _id: new ObjectID()
 }, {
-    text: "second test"
+    text: "second test",
+    _id: new ObjectID()
 }, {
-    text: "third test"
+    text: "third test",
+    _id: new ObjectID()
 }]
 
 beforeEach((done) => {
@@ -71,3 +75,15 @@ describe('GET /todos', () => {
         .end(done);
     });
 })
+
+describe('GET /todo/:id', () => {
+    it('should return todo doc', (done) => {
+        request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.Todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    });
+});
