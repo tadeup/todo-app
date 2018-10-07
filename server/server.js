@@ -6,7 +6,7 @@ const _ = require('lodash');
 require('./config/config');
 var {mongoose} = require('./db/mongoose');
 var {todo} = require('./models/todo');
-var {user} = require('./models/user');
+var {User} = require('./models/user');
 
 var app = express();
 const port = process.env.PORT || 3000
@@ -98,6 +98,26 @@ app.patch('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     })
+})
+
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ["email", "password"]);
+    var newUser = new User(body);
+    console.log(newUser);
+    
+    newUser
+    .save()
+    .then((newUser) => {
+        console.log(newUser);
+        
+        return newUser.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(newUser);
+    }).catch((err) => {
+        console.log(err);
+        
+        res.status(400).send(err)
+    });
 })
 
 app.listen(port, () =>{
