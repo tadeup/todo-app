@@ -7,6 +7,7 @@ require('./config/config');
 var {mongoose} = require('./db/mongoose');
 var {todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 const port = process.env.PORT || 3000
@@ -103,13 +104,10 @@ app.patch('/todos/:id', (req, res) => {
 app.post('/users', (req, res) => {
     var body = _.pick(req.body, ["email", "password"]);
     var newUser = new User(body);
-    console.log(newUser);
     
     newUser
     .save()
     .then((newUser) => {
-        console.log(newUser);
-        
         return newUser.generateAuthToken();
     }).then((token) => {
         res.header('x-auth', token).send(newUser);
@@ -119,6 +117,11 @@ app.post('/users', (req, res) => {
         res.status(400).send(err)
     });
 })
+
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user)
+});
 
 app.listen(port, () =>{
     console.log(`Started on port ${port}`); 
